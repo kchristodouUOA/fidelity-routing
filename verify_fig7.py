@@ -1,13 +1,8 @@
 import networkx as nx
 import numpy as np
 import quantum
-import itertools
-import random
+import json
 import math
-
-# ==============================================================================
-# OPTIMIZED SIMULATION
-# ==============================================================================
 
 def get_q_path_cost(G, path, f_th, capacity, config):
     l = len(path) - 1
@@ -19,7 +14,7 @@ def get_q_path_cost(G, path, f_th, capacity, config):
     for p in range(1, capacity + 1):
         f_pure = quantum.get_purified_fidelity_for_budget(f_inits[0], p, model=p_model)
         prob = quantum.get_purification_success_prob(f_pure, model=p_model)**(p-1)
-        dp[1][p] = (f_pure, prob, p) # Added max_p tracking
+        dp[1][p] = (f_pure, prob, p)
         
     for i in range(2, l + 1):
         for p_total in range(i, capacity + 1):
@@ -94,13 +89,13 @@ def get_q_leap_cost(G, path, f_th, capacity, config):
         
     return total_cost, max_p, f_e2e, total_prob
 
-def simulate(mu, sigma, trials, f_thresholds, config, algo='qpath'):
-    print(f"\n--- Simulation: {algo.upper()} | {config['purification'].upper()} | {config['fidelity_e2e'].upper()} | Trials={trials} ---")
-    print(f"{'F_th':<6} | {'Tput':<8} | {'Fid':<8} | {'Util':<8}")
+def simulate(mu, sigma, trials, capacities, f_th, config, algo='qpath'):
+    print(f"\n--- Simulation Fig7: {algo.upper()} | {config['purification'].upper()} | f_th={f_th} | Trials={trials} ---")
+    print(f"{'Cap':<6} | {'Tput':<8} | {'Fid':<8} | {'Util':<8}")
     print("-" * 40)
     
     results = {
-        'f_th': f_thresholds,
+        'capacity': capacities,
         'throughput': [],
         'fidelity': [],
         'utilization': []
@@ -110,7 +105,7 @@ def simulate(mu, sigma, trials, f_thresholds, config, algo='qpath'):
     f1_vals = np.clip(np.random.normal(mu, sigma, trials), 0.5, 0.999)
     f2_vals = np.clip(np.random.normal(mu, sigma, trials), 0.5, 0.999)
 
-    for f_th in f_thresholds:
+    for cap in capacities:
         t_list, f_list, u_list = [], [], []
         
         for idx in range(trials):
@@ -118,21 +113,20 @@ def simulate(mu, sigma, trials, f_thresholds, config, algo='qpath'):
             G.add_edge('S', 'R', fidelity=f1_vals[idx])
             G.add_edge('R', 'D', fidelity=f2_vals[idx])
             
-            capacity = 50
             num_edges = 2
             
             if algo == 'qpath':
-                p_total, max_p, fid, prob = get_q_path_cost(G, ['S', 'R', 'D'], f_th, capacity, config)
+                p_total, max_p, fid, prob = get_q_path_cost(G, ['S', 'R', 'D'], f_th, cap, config)
             else:
-                p_total, max_p, fid, prob = get_q_leap_cost(G, ['S', 'R', 'D'], f_th, capacity, config)
+                p_total, max_p, fid, prob = get_q_leap_cost(G, ['S', 'R', 'D'], f_th, cap, config)
                 
             if p_total != float('inf') and max_p > 0:
-                flows = math.floor(capacity / max_p)
+                flows = math.floor(cap / max_p)
                 tput = flows * prob if config['use_probs'] else flows
                 
-                # The total pairs required per successful E2E connection over the path capacity
+                # Pure local algorithmic utilization computation: used / available
                 used_pairs = flows * p_total
-                utilization = used_pairs / (capacity * num_edges)
+                utilization = used_pairs / (cap * num_edges)
                 
                 t_list.append(tput)
                 f_list.append(fid)
@@ -150,27 +144,25 @@ def simulate(mu, sigma, trials, f_thresholds, config, algo='qpath'):
         results['fidelity'].append(mean_f)
         results['utilization'].append(mean_u)
         
-        print(f"{f_th:<6.2f} | {mean_t:<8.2f} | {mean_f:<8.3f} | {mean_u:<8.3f}")
+        print(f"{cap:<6} | {mean_t:<8.3f} | {mean_f:<8.3f} | {mean_u:<8.3f}")
         
     return results
 
 if __name__ == "__main__":
-    import json
-    f_ths = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
+    capacities = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+    f_th_fixed = 0.7
     
-    # Paper Config
     cfg_paper = {'purification': 'bbpssw', 'fidelity_e2e': 'swapping', 'use_probs': True}
-    res_paper_qpath = simulate(0.8, 0.1, 200, f_ths, cfg_paper, algo='qpath')
-    res_paper_qleap = simulate(0.8, 0.1, 200, f_ths, cfg_paper, algo='qleap')
+    res_paper_qpath = simulate(0.8, 0.1, 200, capacities, f_th_fixed, cfg_paper, algo='qpath')
+    res_paper_qleap = simulate(0.8, 0.1, 200, capacities, f_th_fixed, cfg_paper, algo='qleap')
     
-    # Repo Config
     cfg_repo = {'purification': 'isotropic', 'fidelity_e2e': 'product', 'use_probs': True}
-    res_repo_qpath = simulate(0.9, 0.1, 200, f_ths, cfg_repo, algo='qpath')
-    res_repo_qleap = simulate(0.9, 0.1, 200, f_ths, cfg_repo, algo='qleap')
+    res_repo_qpath = simulate(0.9, 0.1, 200, capacities, f_th_fixed, cfg_repo, algo='qpath')
+    res_repo_qleap = simulate(0.9, 0.1, 200, capacities, f_th_fixed, cfg_repo, algo='qleap')
     
-    with open("fig6_data.json", "w") as f:
+    with open("fig7_data.json", "w") as f:
         json.dump({
             'paper_qpath': res_paper_qpath, 'paper_qleap': res_paper_qleap, 
             'repo_qpath': res_repo_qpath, 'repo_qleap': res_repo_qleap
         }, f, indent=4)
-    print("\nResults saved to fig6_data.json")
+    print("\nResults saved to fig7_data.json")
