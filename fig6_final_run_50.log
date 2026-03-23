@@ -1,0 +1,87 @@
+--- Testing Fidelity Threshold: 0.6 ---
+
+DETAILED DEBUG Trial 0: f_th=0.6
+  Path Link Fidelities: N/A
+  First Path Link Fids: [0.8804300534774208, 0.9871893680613604, 0.9785844184155102, 0.9618836709345878, 0.9864813023416981, 0.925627388496001, 0.9224090034557746, 1.0]
+  Prod: 0.6890722565978482
+  LEAP Off Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Phoenix', 'Houston', 'New Orleans', 'Jacksonville', 'Atlanta', 'Charlotte', 'Washington DC']]
+  LEAP Our Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Phoenix', 'Houston', 'New Orleans', 'Jacksonville', 'Atlanta', 'Charlotte', 'Washington DC']]
+  LEAP Off de:      [[0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 1, 0, 1, 0]]
+  LEAP Our de:      [[0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 1, 0, 1, 0]]
+  LEAP Off Tput: [50, 18.757721901010733]
+  LEAP Our Tput: [50.0, 18.757721901010733]
+  PATH Off Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'St Louis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Phoenix', 'Houston', 'New Orleans', 'Jacksonville', 'Atlanta', 'Charlotte', 'Washington DC']]
+  PATH Our Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Memphis', 'Nashville', 'Atlanta', 'Charlotte', 'Washington DC']]
+  PATH Off de:      [[0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]]
+  PATH Our de:      [[0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 1, 0, 0]]
+  PATH Off Tput: [50, 18.757721901010733]
+  PATH Our Tput: [50.0, 18.624999999999996]
+--- Testing Fidelity Threshold: 0.7 ---
+
+DETAILED DEBUG Trial 0: f_th=0.7
+  Path Link Fidelities: N/A
+  First Path Link Fids: [0.8804300534774208, 0.9871893680613604, 0.9785844184155102, 0.9618836709345878, 0.9864813023416981, 0.925627388496001, 0.9224090034557746, 1.0]
+  Prod: 0.6890722565978482
+  LEAP Off Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  LEAP Our Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  LEAP Off de:      [[1, 0, 0, 0, 0, 1, 1, 0], [1, 1, 1, 0, 1, 0, 1, 0, 1, 0], [1, 1, 0, 1, 0, 1, 0, 1, 0]]
+  LEAP Our de:      [[1, 0, 0, 0, 0, 1, 1, 0], [1, 1, 1, 0, 1, 0, 1, 0, 1, 0], [1, 1, 0, 1, 0, 1, 0, 1, 0]]
+  LEAP Off Tput: [19.73635127944166, 9.003706512485152, 9.75401538852558]
+  LEAP Our Tput: [19.73635127944166, 9.003706512485152, 9.75401538852558]
+  PATH Off Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'St Louis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'St Louis', 'Chicago', 'Pittsburgh', 'Washington DC']]
+  PATH Our Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC']]
+  PATH Off de:      [[1, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 0]]
+  PATH Our de:      [[1, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 0]]
+  PATH Off Tput: [19.73635127944166, 18.757721901010733]
+  PATH Our Tput: [19.73635127944166, 18.757721901010733]
+--- Testing Fidelity Threshold: 0.8 ---
+
+DETAILED DEBUG Trial 0: f_th=0.8
+  Path Link Fidelities: N/A
+  First Path Link Fids: [0.8804300534774208, 0.9871893680613604, 0.9785844184155102, 0.9618836709345878, 0.9864813023416981, 0.925627388496001, 0.9224090034557746, 1.0]
+  Prod: 0.6890722565978482
+  LEAP Off Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  LEAP Our Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  LEAP Off de:      [[1, 0, 0, 1, 0, 1, 1, 0], [1, 2, 1, 1, 0, 1, 0, 1, 0]]
+  LEAP Our de:      [[1, 0, 0, 1, 0, 1, 1, 0], [1, 2, 1, 1, 0, 1, 0, 1, 0]]
+  LEAP Off Tput: [19.73635127944166, 10.007413024970301]
+  LEAP Our Tput: [19.73635127944166, 10.007413024970301]
+  PATH Off Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'St Louis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  PATH Our Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  PATH Off de:      [[1, 0, 0, 1, 0, 0, 0], [1, 1, 0, 0, 0, 1, 1, 0], [1, 1, 0, 0, 0, 1, 0, 1, 0]]
+  PATH Our de:      [[1, 0, 0, 0, 0, 1, 0], [1, 1, 0, 0, 0, 1, 0, 1, 0]]
+  PATH Off Tput: [19.73635127944166, 9.003706512485152, 9.75401538852558]
+  PATH Our Tput: [19.73635127944166, 18.757721901010733]
+--- Testing Fidelity Threshold: 0.9 ---
+
+DETAILED DEBUG Trial 0: f_th=0.9
+  Path Link Fidelities: N/A
+  First Path Link Fids: [0.8804300534774208, 0.9871893680613604, 0.9785844184155102, 0.9618836709345878, 0.9864813023416981, 0.925627388496001, 0.9224090034557746, 1.0]
+  Prod: 0.6890722565978482
+  LEAP Off Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Phoenix', 'Houston', 'New Orleans', 'Jacksonville', 'Atlanta', 'Charlotte', 'Washington DC']]
+  LEAP Our Paths: [['Portland', 'San Francisco', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Phoenix', 'Houston', 'New Orleans', 'Jacksonville', 'Atlanta', 'Charlotte', 'Washington DC']]
+  LEAP Off de:      [[2, 0, 1, 1, 1, 1, 1, 0], [1, 2, 1, 1, 1, 1, 1, 1, 0], [1, 2, 1, 0, 1, 0, 2, 1, 2, 0]]
+  LEAP Our de:      [[2, 0, 1, 1, 1, 1, 1, 0], [1, 2, 1, 1, 1, 1, 1, 1, 0], [1, 2, 1, 0, 1, 0, 2, 1, 2, 0]]
+  LEAP Off Tput: [10.946897228263994, 5.629169826545795, 4.3782431984245065]
+  LEAP Our Tput: [10.946897228263994, 5.629169826545795, 4.3782431984245065]
+  PATH Off Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'St Louis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  PATH Our Paths: [['Portland', 'San Francisco', 'Denver', 'Kansas City', 'Minneapolis', 'Chicago', 'Pittsburgh', 'Washington DC'], ['Portland', 'Seattle', 'Salt Lake City', 'Denver', 'Dallas', 'Kansas City', 'Minneapolis', 'Toronto', 'Cleveland', 'Pittsburgh', 'Washington DC']]
+  PATH Off de:      [[1, 0, 1, 1, 0, 1, 0], [1, 2, 1, 0, 1, 0, 1, 0, 1, 0]]
+  PATH Our de:      [[1, 0, 1, 0, 1, 1, 0], [1, 2, 1, 0, 1, 0, 1, 0, 1, 0]]
+  PATH Off Tput: [19.73635127944166, 10.007413024970301]
+  PATH Our Tput: [19.73635127944166, 10.007413024970301]
+
+============================================================================================================================================
+F_th   | Alg      | Tput(Off)  | Tput(Our)  | Fid(Off)   | Fid(Our)   | Util(Off)  | Util(Our)  | D_Tput  
+--------------------------------------------------------------------------------------------------------------------------------------------
+0.6    | LEAP     | 64.7569    | 64.7569    | 0.7454     | 0.7454     | 0.8875     | 0.8875     | 0.0000  
+       | PATH     | 73.9971    | 73.8525    | 0.6360     | 0.6362     | 0.7759     | 0.7733     | 0.1446  
+0.7    | LEAP     | 46.6903    | 46.6754    | 0.8876     | 0.8876     | 0.8612     | 0.8657     | 0.0149  
+       | PATH     | 57.5504    | 58.5416    | 0.7256     | 0.7242     | 0.7181     | 0.7299     | -0.9912 
+0.8    | LEAP     | 37.2792    | 37.2792    | 0.9376     | 0.9376     | 0.8151     | 0.8151     | 0.0000  
+       | PATH     | 48.7089    | 48.8942    | 0.8242     | 0.8224     | 0.7854     | 0.7758     | -0.1853 
+0.9    | LEAP     | 30.4371    | 30.4371    | 0.9668     | 0.9668     | 0.7224     | 0.7224     | 0.0000  
+       | PATH     | 40.5440    | 40.6617    | 0.9158     | 0.9148     | 0.8554     | 0.8548     | -0.1177 
+============================================================================================================================================
+
+Plot saved as 'fig6_replication.png'

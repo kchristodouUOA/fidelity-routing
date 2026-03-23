@@ -1,0 +1,102 @@
+--- Testing Capacity: 10 ---
+
+  DETAILED DEBUG Trial 0: cap=10, f_th=0.7, req=200
+  Src: Richmond  Tgt: St Louis
+  LEAP Off Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Our Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Off de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Our de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Off Tput:  [10, 10]
+  LEAP Our Tput:  [10.0, 10.0]
+  PATH Off Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Our Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Off de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Our de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Off Tput:  [10, 10]
+  PATH Our Tput:  [10.0, 10.0]
+
+--- Testing Capacity: 30 ---
+
+  DETAILED DEBUG Trial 0: cap=30, f_th=0.7, req=200
+  Src: Richmond  Tgt: St Louis
+  LEAP Off Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Our Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Off de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Our de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Off Tput:  [30, 30]
+  LEAP Our Tput:  [30.0, 30.0]
+  PATH Off Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Our Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Off de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Our de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Off Tput:  [30, 30]
+  PATH Our Tput:  [30.0, 30.0]
+
+--- Testing Capacity: 50 ---
+
+  DETAILED DEBUG Trial 0: cap=50, f_th=0.7, req=200
+  Src: Richmond  Tgt: St Louis
+  LEAP Off Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Our Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Off de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Our de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Off Tput:  [50, 50]
+  LEAP Our Tput:  [50.0, 50.0]
+  PATH Off Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Our Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Off de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Our de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Off Tput:  [50, 50]
+  PATH Our Tput:  [50.0, 50.0]
+
+--- Testing Capacity: 70 ---
+
+  DETAILED DEBUG Trial 0: cap=70, f_th=0.7, req=200
+  Src: Richmond  Tgt: St Louis
+  LEAP Off Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Our Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Off de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Our de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Off Tput:  [70, 70]
+  LEAP Our Tput:  [70.0, 70.0]
+  PATH Off Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Our Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Off de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Our de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Off Tput:  [70, 70]
+  PATH Our Tput:  [70.0, 70.0]
+
+--- Testing Capacity: 90 ---
+
+  DETAILED DEBUG Trial 0: cap=90, f_th=0.7, req=200
+  Src: Richmond  Tgt: St Louis
+  LEAP Off Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Our Paths: [['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis'], ['Richmond', 'Atlanta', 'Nashville', 'St Louis']]
+  LEAP Off de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Our de:    [[0, 0, 0, 0], [0, 0, 0]]
+  LEAP Off Tput:  [90, 90]
+  LEAP Our Tput:  [90.0, 90.0]
+  PATH Off Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Our Paths: [['Richmond', 'Atlanta', 'Nashville', 'St Louis'], ['Richmond', 'Washington DC', 'Pittsburgh', 'Chicago', 'St Louis']]
+  PATH Off de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Our de:    [[0, 0, 0], [0, 0, 0, 0]]
+  PATH Off Tput:  [90, 90]
+  PATH Our Tput:  [90.0, 90.0]
+
+
+============================================================================================================================================
+Cap    | Alg      | Tput(Off)  | Tput(Our)  | Fid(Off)   | Fid(Our)   | Util(Off)  | Util(Our)  | D_Tput  
+--------------------------------------------------------------------------------------------------------------------------------------------
+10     | LEAP     | 17.3140    | 17.3140    | 0.7954     | 0.7954     | 0.9435     | 0.9435     | 0.0000  
+       | PATH     | 17.9690    | 17.9382    | 0.7714     | 0.7718     | 0.8977     | 0.8982     | 0.0308  
+30     | LEAP     | 51.9885    | 51.9885    | 0.7955     | 0.7956     | 0.9454     | 0.9454     | 0.0000  
+       | PATH     | 53.9525    | 53.8905    | 0.7714     | 0.7718     | 0.8990     | 0.9004     | 0.0621  
+50     | LEAP     | 86.6630    | 86.6630    | 0.7955     | 0.7956     | 0.9458     | 0.9458     | 0.0000  
+       | PATH     | 89.9361    | 89.8266    | 0.7714     | 0.7718     | 0.8992     | 0.9006     | 0.1095  
+70     | LEAP     | 121.3375   | 121.3375   | 0.7956     | 0.7956     | 0.9459     | 0.9459     | 0.0000  
+       | PATH     | 125.9197   | 125.7789   | 0.7714     | 0.7718     | 0.8993     | 0.9008     | 0.1408  
+90     | LEAP     | 156.0120   | 156.0120   | 0.7956     | 0.7956     | 0.9460     | 0.9460     | 0.0000  
+       | PATH     | 161.9032   | 161.7150   | 0.7714     | 0.7718     | 0.8994     | 0.9008     | 0.1882  
+============================================================================================================================================
+
+Plot saved as 'fig7_replication.png'

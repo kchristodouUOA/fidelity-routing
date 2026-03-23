@@ -1,160 +1,374 @@
+"""
+Q-PATH: Priority-queue routing with minimum purification cost (Algorithm 1).
+
+Path discovery replicates the official Spfmc.costsearch / skshortpath methods
+(tmp_repo/src/spfmincost.py) — Yen's k-th shortest by hop count — so path
+ordering closely matches the official implementation.
+
+NOTE on minor differences with the official:
+  Dijkstra tie-breaking depends on adjacency-list node ordering.  Here we use
+  sorted(G.nodes()); the official uses a set-derived nodes_names ordering.
+  When multiple paths share the minimum hop count, each code base may pick a
+  different "first" path as the Yen's spur base, discovering different k-th
+  paths.  This causes small per-trial throughput differences in some cases; the
+  algorithmic logic (priority queue by scost, resource tracking, purification
+  decisions) is identical to the official.
+"""
 import networkx as nx
-import numpy as np
-import os, math
-import itertools
+import math
+import copy
+import heapq
+from queue import PriorityQueue
+import throughput_official as th
 
-try:
-    Tlen = os.get_terminal_size().columns
-except OSError:
-    Tlen = 80
 
-import quantum
-import paths
+# ---------------------------------------------------------------------------
+# Path enumeration helpers
+# Adapted from tmp_repo/src/spfmincost.py (Spfmc class) and
+# tmp_repo/src/updatetopo.py (Udtp.topocost / Udtp.topoljb).
+# We replicate the official's incremental k-shortest-by-hops discovery so
+# path selection order closely mirrors the paper's algorithm.
+# ---------------------------------------------------------------------------
 
-# cutoff fidelity 
-min_fidelity = 0.8
-np.random.seed(0)
-
-# initialise graph
-G = nx.Graph()
-debug = False
-
-SDpairs = {
-    'simple': [
-        ('source','r1'), ('source', 'r2'), 
-        ('r1','r2'), ('r1','destination'), 
-        ('r2', 'destination'), 
-    ],
-    'complex': [
-        ('source','r1'), ('source','r3'), 
-        ('r1','r2'), ('r1','r3'), 
-        ('r2','r3'), ('r2','destination'), 
-        ('r3','source'), ('r3','destination'),
-    ]
-}
-
-def generate_allocations(budget, l, max_caps):
+def _build_hop_adj(G_work, node_list):
     """
-    Generator that yields all valid ways to distribute exactly 'budget'
-    purification pairs across 'l' edges, such that no edge exceeds its 
-    specific max capacity (max_caps).
-
-    Args:
-        budget (int): Total extra pairs to distribute.
-        l (int): Number of edges.
-        max_caps (list): Maximum allowed pairs per edge (its physical capacity limit).
+    Build hop adjacency list from the current graph G_work.
+    adj[i] = [[j, 1], ...] for each neighbor j of node i.
+    node_list is fixed at the start so indices are stable across iterations
+    even as edges are removed.
+    Equivalent to Udtp().topocost(g) + Udtp().topoljb(hopg) in the official.
     """
-    # Base cases
-    if l == 1:
-        if budget <= max_caps[0] - 1: # We already consume 1 pair fundamentally
-            yield (budget,)
-        return
+    node_to_idx = {n: i for i, n in enumerate(node_list)}
+    n = len(node_list)
+    adj = [[] for _ in range(n)]
+    for u, v in G_work.edges():
+        if u in node_to_idx and v in node_to_idx:
+            i, j = node_to_idx[u], node_to_idx[v]
+            adj[i].append([j, 1])
+            adj[j].append([i, 1])
+    return adj
 
-    # Recursive distribution
-    for val in range(min(budget, max_caps[0] - 1) + 1):
-        for rest in generate_allocations(budget - val, l - 1, max_caps[1:]):
-            yield (val,) + rest
 
-def q_path_algorithm(G, source, target, F_th):
+def _heapdijkstra(adj, source, des):
     """
-    Iterative Routing Design for Single S-D Pair (Q-PATH)
-    1. Find absolute minimum hop count H_min (cost base bound).
-    2. Iteratively search through costs: H_min, H_min+1,...
-    3. For a given expected_cost, find all paths with length L <= expected_cost.
-    4. Distribute (expected_cost - L) purification budget across edges.
-    5. Return first combination meeting F_th.
+    Min-hop Dijkstra on adjacency list.  Returns path as index list, or [].
+    Adapted from Spfmc.heapdijkstra in tmp_repo/src/spfmincost.py.
     """
+    n = len(adj)
+    costs = [float('inf')] * n
+    prev = [-1] * n
+    visited = [0] * n
+    costs[source] = 0
+
+    heap = []
+    for nb in adj[source]:
+        prev[nb[0]] = source
+        costs[nb[0]] = nb[1]
+        heapq.heappush(heap, (nb[1], nb[0]))
+
+    while heap:
+        cur_cost, cur = heapq.heappop(heap)
+        if visited[cur]:
+            continue
+        visited[cur] = 1
+        for nb in adj[cur]:
+            new_cost = costs[cur] + nb[1]
+            if new_cost < costs[nb[0]]:
+                costs[nb[0]] = new_cost
+                prev[nb[0]] = cur
+                heapq.heappush(heap, (new_cost, nb[0]))
+
+    # Reconstruct path
+    path = []
+    u = des
+    while u != -1:
+        path.append(u)
+        u = prev[u]
+    path.reverse()
+
+    if path and path[0] == source and len(path) >= 2:
+        return path
+    return []
+
+
+def _noring(path):
+    """True iff all nodes are distinct (no cycle). From Pathf.noring."""
+    return len(set(path)) == len(path)
+
+
+def _find_next_kth(adj, source, des, aset, bset):
+    """
+    Find the next k-th shortest path by hop count, adding it to aset.
+    Returns True if a new path was found.
+    Adapted from Spfmc.skshortpath in tmp_repo/src/spfmincost.py:
+      - For each edge in aset[-1], remove it, find shortest spur to dest.
+      - Collect spur candidates in bset; pick the shortest (fewest hops).
+    """
+    if not aset:
+        p = _heapdijkstra(adj, source, des)
+        if p:
+            aset.append(p)
+            return True
+        return False
+
+    last_path = aset[-1]
+    for i in range(len(last_path) - 1):
+        curnode = last_path[i]
+        curroot = last_path[i + 1]
+        pathahead = last_path[:i]
+
+        # Remove edge curnode <-> curroot from a fresh copy
+        tmpg = copy.deepcopy(adj)
+        tmpg[curnode] = [x for x in tmpg[curnode] if x[0] != curroot]
+        tmpg[curroot] = [x for x in tmpg[curroot] if x[0] != curnode]
+
+        spur = _heapdijkstra(tmpg, curnode, des)
+        if not spur:
+            continue
+
+        full_path = pathahead + spur
+        if full_path not in bset and full_path not in aset and _noring(full_path):
+            bset.append(full_path)
+
+    if bset:
+        # Pick shortest by hop count (matches official)
+        best_idx = min(range(len(bset)), key=lambda x: len(bset[x]))
+        new_path = bset[best_idx]
+        if new_path not in aset:
+            aset.append(new_path)
+        bset.pop(best_idx)
+        return True
+    return False
+
+
+def _costsearch(adj, source, des, cost, aset, bset):
+    """
+    Return all paths with exactly `cost` hops. Mutates aset / bset.
+    Adapted from Spfmc.costsearch in tmp_repo/src/spfmincost.py:
+      - Keeps calling _find_next_kth until aset[-1] exceeds cost hops.
+      - aset/bset persist across cost iterations (incremental discovery).
+    """
+    if not aset:
+        p = _heapdijkstra(adj, source, des)
+        if not p:
+            return [], aset, bset
+        aset.append(p)
+
+    # Extend aset until last path exceeds `cost` hops (or no more paths)
+    while len(aset[-1]) - 1 <= cost:
+        prev_len = len(aset)
+        _find_next_kth(adj, source, des, aset, bset)
+        if len(aset) == prev_len:
+            break  # exhausted all paths
+
+    return [p for p in aset if len(p) - 1 == cost], aset, bset
+
+
+# ---------------------------------------------------------------------------
+# Main algorithm
+# ---------------------------------------------------------------------------
+
+def compute_metrics(G, source, target, f_th, capacity, config):
+    """Q-PATH metrics using priority-queue sorted by purification cost."""
+    request_limit = float(config.get('request', 50))
+    total_throughput = 0.0
+    total_consumption = 0.0
+    delivered_fidelities = []
+    delivered_tputs = []
+    debug_list = []
+
+    G_work = G.copy()
+
+    # --- ftable: ftable[n] = fidelity after n purification rounds ---
+    def build_ftable(f_init, c):
+        table = []
+        f = f_init
+        for _ in range(int(c)):
+            table.append(f)
+            f = th.calfgn(f, f_init)
+        return table
+
+    # --- Step 1: udtp — remove edges that can never reach f_th ---
+    for u, v in list(G_work.edges()):
+        c = int(G_work[u][v]['weight'])
+        f_init = G_work[u][v]['fidelity']
+        if c == 0:
+            G_work.remove_edge(u, v)
+            continue
+        ftable = build_ftable(f_init, c)
+        if ftable[-1] < f_th:
+            G_work.remove_edge(u, v)
+        else:
+            G_work[u][v]['ftable'] = ftable
+
     try:
-        shortest_path = nx.shortest_path(G, source=source, target=target)
-        H_min = len(shortest_path) - 1
-    except nx.NetworkXNoPath:
-        return None, None, None
+        minhop = len(nx.shortest_path(G_work, source=source, target=target, weight=None)) - 1
+    except (nx.NetworkXNoPath, nx.NodeNotFound):
+        return 0.0, 0.0, 0.0, debug_list
 
-    C_max = max(edge[2]['weight'] for edge in G.edges(data=True))
-    max_possible_cost = len(G.edges()) * C_max
+    # Fixed node list (stable indices across iterations)
+    node_list = sorted(G_work.nodes())
+    node_to_idx = {n: i for i, n in enumerate(node_list)}
+    src_i = node_to_idx[source]
+    dst_i = node_to_idx[target]
+    n_nodes = len(node_list)
 
-    for expected_cost in range(H_min, max_possible_cost + 1):
-        # We need paths whose unweighted hop count is L <= expected_cost
-        # because budget = expected_cost - L and budget cannot be negative.
-        # k_shortest_paths from v1/v2 code was broken/simplistic, we use nx Yen
-        
-        # Generator for simple paths sorted by length (hops)
-        # Weight=None treats all edge weights as 1 -> simple hop count
-        path_generator = nx.shortest_simple_paths(G, source, target)
-        
-        for path in path_generator:
-            L = len(path) - 1
-            if L > expected_cost:
-                # since generator is ordered by length, we can break if length exceeds expected_cost
-                break 
-                
-            budget = expected_cost - L
-            
-            # Extract basic info for the path's edges
-            edge_caps = [G[path[i]][path[i+1]]['weight'] for i in range(L)]
-            initial_fs = [G[path[i]][path[i+1]]['fidelity'] for i in range(L)]
-            
-            # Attempt to allocate exactly 'budget' extra pairs 
-            # Note: an allocation 'alloc' means 'alloc[i]' EXTRA pairs are consumed
-            # on edge i. So total consumed on edge i is 1 + alloc[i].
-            for alloc in generate_allocations(budget, L, edge_caps):
-                
-                path_fidelities = []
-                for i in range(L):
-                    pairs_consumed = 1 + alloc[i]
-                    f_purified = quantum.get_purified_fidelity_for_budget(initial_fs[i], pairs_consumed)
-                    path_fidelities.append(f_purified)
-                    
-                end_to_end_f = quantum.get_end_to_end_fidelity(path_fidelities)
-                
-                if end_to_end_f >= F_th:
-                    # Found the absolute optimal!
-                    final_allocations = [1 + a for a in alloc] # real cost vector
-                    return path, final_allocations, expected_cost, end_to_end_f
-                    
-    return None, None, None, None
+    # --- _mostup: greedy purification to reach f_th ---
+    def mostup(G_w, path):
+        L = len(path) - 1
+        de = [0] * L
+        pathf = [G_w[path[i]][path[i+1]]['fidelity'] for i in range(L)]
+        ftables = [G_w[path[i]][path[i+1]]['ftable'] for i in range(L)]
 
+        # prejudge: max achievable fidelity product must reach f_th
+        if math.prod(ftables[i][-1] for i in range(L)) < f_th:
+            return -1, []
 
-if __name__=="__main__":
+        while math.prod(pathf) < f_th:
+            best_f = -1
+            best_idx = 0
+            best_pathf = None
+            for i in range(L):
+                test = list(pathf)
+                test[i] = th.calfgn(test[i], G_w[path[i]][path[i+1]]['fidelity'])
+                val = math.prod(test)
+                if val > best_f:
+                    best_f = val
+                    best_idx = i
+                    best_pathf = test
 
-    ''' INITIALISATION '''
-    E_plain = SDpairs['simple']
-    capacities = np.random.randint(low=5,high=10,size=len(E_plain))
-    fidelities = np.random.uniform(low=0.5, high=1, size=len(E_plain))
+            de[best_idx] += 1
+            if de[best_idx] >= len(ftables[best_idx]):  # cap at capacity
+                return -1, []
+            pathf = best_pathf
 
-    E_attributes = [
-        (edge[0], edge[1], {'weight': weight, 'fidelity': fidelity}) \
-            for (edge, weight, fidelity) in zip(E_plain,capacities,fidelities)
-    ]
+        return sum(d + 1 for d in de), de
 
-    G.add_edges_from(E_attributes)
-    text = f' Initial Graph:'
-    print(text+'-'*(Tlen-len(text)))
-    for edge in G.edges(data=True):
-        print(f" {f'({edge[0]},{edge[1]})':<22}{edge[2]['weight']:<12}{edge[2]['fidelity']:.4f}")
-
-    quantum.delete_edges(G, min_fidelity, debug=False)
-    
-    text = f' Graph after Edge Filtering:'
-    print(text+'-'*(Tlen-len(text)))
-    for edge in G.edges(data=True):
-        print(f" {f'({edge[0]},{edge[1]})':<22}{edge[2]['weight']:<12}{edge[2]['fidelity']:.4f}")
-
-
-    ''' Q-PATH ROUTING '''
-    print("\n" + "="*Tlen)
-    print(" Running Q-PATH Algorithm (Iterative Cost)")
-    print("="*Tlen)
-    
-    path, allocs, cost, final_f = q_path_algorithm(G, 'source', 'destination', min_fidelity)
-    
-    if path is None:
-        print(" [Q-PATH] No valid paths found satisfying the fidelity constraint.")
-    else:
-        print(f" [Q-PATH] Optimal Path found: {' -> '.join(path)}")
-        print(f" [Q-PATH] Total Entangled Pair Cost (minimum): {cost}")
-        print(f" [Q-PATH] End-To-End Fidelity Achieved: {final_f:.4f}")
-        print(f" [Q-PATH] Purification Capacity Allocation per edge:")
-        for i in range(len(path)-1):
+    # --- preudtppath: check capacity, remove edge if insufficient ---
+    def preudtppath(G_w, path, de):
+        for i in range(len(path) - 1):
             u, v = path[i], path[i+1]
-            print(f"   -> Edge ({u},{v}): {allocs[i]} pairs consumed (Capacity allowed: {G[u][v]['weight']})")
+            if not G_w.has_edge(u, v) or int(G_w[u][v]['weight']) < de[i] + 1:
+                if G_w.has_edge(u, v):
+                    G_w.remove_edge(u, v)
+                return False
+        return True
+
+    # --- udtppath: consume resources, update ftable, remove if can't reach f_th ---
+    def udtppath(G_w, path, con):
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i+1]
+            if not G_w.has_edge(u, v):
+                continue
+            G_w[u][v]['weight'] -= con[i]
+            new_c = int(G_w[u][v]['weight'])
+            if new_c <= 0:
+                G_w.remove_edge(u, v)
+                continue
+            f_init = G_w[u][v]['fidelity']
+            new_ftable = build_ftable(f_init, new_c)
+            G_w[u][v]['ftable'] = new_ftable
+            if new_ftable[-1] < f_th:
+                G_w.remove_edge(u, v)
+
+    def epathf(G_w, path, de):
+        f = 1.0
+        for i in range(len(path) - 1):
+            f *= G_w[path[i]][path[i+1]]['ftable'][de[i]]
+        return f
+
+    def caletp(G_w, path, de):
+        probs = [th.calp(G_w[path[i]][path[i+1]]['fidelity'], de[i])
+                 for i in range(len(path) - 1)]
+        return min(probs)
+
+    def calpathsumth(G_w, path, de):
+        return int(min(int(G_w[path[i]][path[i+1]]['weight']) // (de[i] + 1)
+                       for i in range(len(path) - 1)))
+
+    # --- Main loop ---
+    pq = PriorityQueue()
+    aset, bset = [], []
+
+    for cost in range(minhop, n_nodes + 1):
+        # Rebuild hop graph from current G_work
+        if not nx.has_path(G_work, source, target):
+            break
+
+        adj = _build_hop_adj(G_work, node_list)
+
+        # Check if destination still reachable on hop graph
+        if not _heapdijkstra(adj, src_i, dst_i):
+            break
+
+        # Enumerate paths with exactly `cost` hops (Yen's incremental)
+        if cost <= n_nodes - 1:
+            pathset_idx, aset, bset = _costsearch(adj, src_i, dst_i, cost, aset, bset)
+
+            for path_idx in pathset_idx:
+                path = [node_list[i] for i in path_idx]
+                # ispathconnect: all edges must exist in G_work
+                if not all(G_work.has_edge(path[j], path[j+1]) for j in range(len(path)-1)):
+                    continue
+                scost, tmpde = mostup(G_work, path)
+                if tmpde:
+                    pq.put((scost, [path, tmpde]))
+
+        if cost > n_nodes and pq.empty():
+            break
+
+        # Process queue: commit paths with scost <= cost + 1
+        if not pq.empty():
+            while not pq.empty():
+                cur = pq.get()
+                if cur[0] <= cost + 1:
+                    path_cur, de_cur = cur[1][0], cur[1][1]
+                    if preudtppath(G_work, path_cur, de_cur):
+                        t_li = caletp(G_work, path_cur, de_cur)
+                        fi = epathf(G_work, path_cur, de_cur)
+                        n = calpathsumth(G_work, path_cur, de_cur)
+                        patht_li = n * t_li
+
+                        if total_throughput + patht_li >= request_limit:
+                            for i in range(1, n + 1):
+                                if total_throughput + i * t_li >= request_limit:
+                                    actual_tput = i * t_li
+                                    con = [i * (de_cur[j] + 1) for j in range(len(de_cur))]
+                                    total_throughput += actual_tput
+                                    total_consumption += sum(con)
+                                    delivered_fidelities.append(fi)
+                                    delivered_tputs.append(actual_tput)
+                                    debug_list.append({
+                                        'path': path_cur, 'de': de_cur,
+                                        'tput': actual_tput, 'f_path': fi,
+                                        'con': con,
+                                    })
+                                    avg_fid = _wavg(delivered_fidelities, delivered_tputs)
+                                    return (float(total_throughput), float(avg_fid),
+                                            float(total_consumption), debug_list)
+                        else:
+                            actual_tput = patht_li
+                            con = [n * (de_cur[j] + 1) for j in range(len(de_cur))]
+                            total_throughput += actual_tput
+                            total_consumption += sum(con)
+                            delivered_fidelities.append(fi)
+                            delivered_tputs.append(actual_tput)
+                            debug_list.append({
+                                'path': path_cur, 'de': de_cur,
+                                'tput': actual_tput, 'f_path': fi,
+                                'con': con,
+                            })
+                            udtppath(G_work, path_cur, con)
+                else:
+                    pq.put(cur)
+                    break
+
+    avg_fid = _wavg(delivered_fidelities, delivered_tputs)
+    return float(total_throughput), float(avg_fid), float(total_consumption), debug_list
+
+
+def _wavg(fids, tputs):
+    total = sum(tputs)
+    if total <= 0:
+        return 0.0
+    return sum(fids[i] * tputs[i] for i in range(len(fids))) / total
